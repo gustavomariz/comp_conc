@@ -8,19 +8,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-#define NTHREADS 3
-
-
-int cont_bar = 0;
+int nthreads = 0; //variável global para o número de threads
+int cont_bar = 0; //variável global para a contagem da barreira
 pthread_mutex_t mutex;
 pthread_cond_t cond_bar;
 
 //Implementação da barreira
-void barreira(int nthreads) {
+void barreira(int numt) {
    pthread_mutex_lock(&mutex);
    cont_bar++;
-   if (cont_bar < nthreads) {
+   if (cont_bar < numt) {
        pthread_cond_wait(&cond_bar, &mutex);
    } else {
        cont_bar=0;
@@ -33,16 +30,16 @@ void barreira(int nthreads) {
 void *greetings(void *t) {
 
 
-  int *my_id = (int*)t, i;
-  printf("Olá da thread %d\n", *my_id);
+  int *my_id = (int*)t;
+  printf("Olá da thread %d\n", my_id);
 
  //Espera todas as threads
-  barreira(NTHREADS);
-  printf("Que dia bonito thread %d\n", *my_id);
+  barreira(nthreads);
+  printf("Que dia bonito thread %d\n", my_id);
 
   //Espera todas as threads
-  barreira(NTHREADS);
-  printf("Até breve da thread %d\n", *my_id);
+  barreira(nthreads);
+  printf("Até breve da thread %d\n", my_id);
   
  free(my_id);
  pthread_exit(NULL);
@@ -53,29 +50,22 @@ void *greetings(void *t) {
 
 int main(int argc, char *argv[]){
 
-   //Gerando variáveis para passar o índice da thread
-   int *t1, *t2, *t3;
-   pthread_t threads[NTHREADS];
-   t1=malloc(sizeof(int));
-   t2=malloc(sizeof(int));
-   t3=malloc(sizeof(int));
-   *t1=1, *t2=2, *t3=3;
-
+   nthreads = atoi(argv[1]); //define o número de threads na var global
+   pthread_t threads[nthreads];
 
    pthread_mutex_init(&mutex, NULL);
    pthread_cond_init (&cond_bar, NULL);
 
-   //Cria as três threads, passando a função e o índice da thread.
-   pthread_create(&threads[0], NULL, greetings, (void *)t1);
-   pthread_create(&threads[2], NULL, greetings, (void *)t3);
-   pthread_create(&threads[1], NULL, greetings, (void *)t2);
+   //Cria as threads, passando a função e o índice da thread.
+   for (int i = 0; i < nthreads; i++){
+      pthread_create(&threads[i], NULL, greetings, (void *)(i+1));
+   }
 
 
    //Espera todas as threads chegarem
-   for (int i = 0; i < NTHREADS; i++) {
+   for (int i = 0; i < nthreads; i++) {
        pthread_join(threads[i], NULL);
    }
-   printf ("Acabou!\n");
 
    pthread_mutex_destroy(&mutex);
    pthread_cond_destroy(&cond_bar);
