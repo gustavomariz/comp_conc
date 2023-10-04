@@ -31,7 +31,7 @@ void Insere(char *linha) {
 
     in = (in + 1) % nthreads;
 
-    printf("Prod inseriu: %s\n", linha);
+    printf("Produtor inseriu: %s\n", linha);
 
     sem_post(&mutexGeral); //fim da exclusão mútua
     sem_post(&slotCheio); //sinaliza slot preenchido
@@ -52,7 +52,7 @@ void Retira(int id) {
 
     out = (out + 1) % nthreads;
 
-    printf("Cons[%d] retirou: %s\n", id, linha);
+    printf("Consumidor[%d] retirou: %s\n", id, linha);
 
     sem_post(&mutexGeral);//fim da exclusão mútua
     sem_post(&slotVazio); //libera um slot do buffer
@@ -67,7 +67,7 @@ void *consumidor(void * arg) {
         Retira(id); //retira o proximo item
         sleep(1);
         if(fim_arquivo==1){ //para a execução se o arquivo chegou ao fim
-            return 0;
+            exit(1);
         }
     }
 
@@ -78,22 +78,21 @@ void *consumidor(void * arg) {
 
 //função auxiliar para leitura do arquivo e realizar a função do produtor
 void le_arquivo(char* nome){
-    FILE *fptr;
+    FILE *file;
 
     //abre arquivo para leitura
-    fptr = fopen(nome, "r");
+    file = fopen(nome, "r");
 
     //armazena conteúdo da linha
     char linha[TAM_TEXTO];
 
     //garante existência do arquivo
-    if(fptr != NULL) {
+    if(file != NULL) {
         //le as linhas e imprime
-        while(fgets(linha, TAM_TEXTO, fptr)) {
+        while(fgets(linha, TAM_TEXTO, file)) {
             //printf("%s", myString);
             Insere(linha); //atividade do produtor
-            if (feof(fptr)){
-                printf("arquivo chegou ao fim");
+            if (feof(file)){
                 fim_arquivo = 1; //identifica que o arquivo chegou ao fim
             }
         }
@@ -104,7 +103,7 @@ void le_arquivo(char* nome){
     }
 
     //fecha o arquivo
-    fclose(fptr);
+    fclose(file);
 }
 
 int main(int argc, char *argv[]) {
