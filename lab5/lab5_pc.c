@@ -31,6 +31,7 @@ void Insere(char *linha) {
     strcpy(Buffer[in], linha); //copia o texto da linha obtida para o buffer
 
     in = (in + 1) % TAM_BUFFER;
+    printf("\nin: %d\n", in);
 
     printf("Produtor inseriu: %s\n", linha);
     slot_vazio++;
@@ -50,10 +51,10 @@ void Retira(int id) {
     linha = Buffer[out];
 
     strcpy(linha, Buffer[out]); //copia o texto do buffer para a linha obtida
-    Buffer[out] = 0; //limpa o slot do buffer
+    //Buffer[out] = 0; //limpa o slot do buffer
 
     out = (out + 1) % TAM_BUFFER;
-
+    printf("\nout: %d\n", out);
     printf("Consumidor[%d] retirou: %s\n", id, linha);
     slot_vazio--;
 
@@ -149,4 +150,3 @@ int main(int argc, char *argv[]) {
     pthread_exit(NULL);
 
 }
-
