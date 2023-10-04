@@ -12,6 +12,7 @@
 #define TAM_BUFFER 10 //numero de elementos no buffer
 
 //variaveis globais
+int slot_vazio = 0; //indica que os slots estão vazios quando = 0
 int fim_arquivo = 0; //indicador de fim do arquivo
 int nthreads = 0;//número de threads
 sem_t slotCheio, slotVazio;  //semaforos para sincronizacao por condicao
@@ -32,6 +33,7 @@ void Insere(char *linha) {
     in = (in + 1) % TAM_BUFFER;
 
     printf("Produtor inseriu: %s\n", linha);
+    slot_vazio++;
 
     sem_post(&mutexGeral); //fim da exclusão mútua
     sem_post(&slotCheio); //sinaliza slot preenchido
@@ -53,6 +55,7 @@ void Retira(int id) {
     out = (out + 1) % TAM_BUFFER;
 
     printf("Consumidor[%d] retirou: %s\n", id, linha);
+    slot_vazio--;
 
     sem_post(&mutexGeral);//fim da exclusão mútua
     sem_post(&slotVazio); //libera um slot do buffer
@@ -66,7 +69,7 @@ void *consumidor(void * arg) {
     while(1) {
         Retira(id); //retira o proximo item
         sleep(1);
-        if(fim_arquivo==1){ //para a execução se o arquivo chegou ao fim
+        if(fim_arquivo == 1 && slot_vazio == 0){ //para a execução se o arquivo chegou ao fim
             exit(1);
         }
     }
@@ -146,6 +149,4 @@ int main(int argc, char *argv[]) {
     pthread_exit(NULL);
 
 }
-
-
 
