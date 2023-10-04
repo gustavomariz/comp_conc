@@ -29,7 +29,7 @@ void Insere(char *linha) {
 
     strcpy(Buffer[in], linha); //copia o texto da linha obtida para o buffer
 
-    in = (in + 1) % nthreads;
+    in = (in + 1) % TAM_BUFFER;
 
     printf("Produtor inseriu: %s\n", linha);
 
@@ -50,7 +50,7 @@ void Retira(int id) {
     strcpy(linha, Buffer[out]); //copia o texto do buffer para a linha obtida
     Buffer[out] = 0; //limpa o slot do buffer
 
-    out = (out + 1) % nthreads;
+    out = (out + 1) % TAM_BUFFER;
 
     printf("Consumidor[%d] retirou: %s\n", id, linha);
 
@@ -131,10 +131,10 @@ int main(int argc, char *argv[]) {
     //inicializa os semáforos
     sem_init(&mutexGeral, 0, 1);
     sem_init(&slotCheio, 0, 0);
-    sem_init(&slotVazio, 0, nthreads);
+    sem_init(&slotVazio, 0, TAM_BUFFER);
 
     //inicializa as threads consumidoras
-    for(int i = 1; i <= nthreads; i++) {
+    for(int i = 0; i < nthreads; i++) {
         id = (int *) malloc(sizeof(int));
         *id = i;
         pthread_create(&tid[i], NULL, consumidor, (void *) (id));        
